@@ -7,8 +7,23 @@ import (
   "os"
 )
 
+type CsvHeader struct {
+  header []string
+}
+
+func (c *CsvHeader) assignValue(a []string) {
+  c.header = a
+}
+
+func (c *CsvHeader) displayValue() {
+  fmt.Println(c.header)
+}
+
+
 func main() {
   file, err := os.Open("sample.csv")
+  c := &CsvHeader{}
+
   var x int =0
 
   if err != nil {
@@ -20,8 +35,7 @@ func main() {
   defer file.Close()
   //
   reader := csv.NewReader(file)
-  // options are available at:
-  // http://golang.org/src/pkg/encoding/csv/reader.go?s=3213:3671#L94
+  // options are available at: http://golang.org/src/pkg/encoding/csv/reader.go?s=3213:3671#L94
   reader.Comma = ';'
   lineCount := 0
   for {
@@ -39,6 +53,7 @@ func main() {
     if x == 0 {
       fmt.Println("Error")
       x++
+      c.assignValue(record)
       continue
     }
 
@@ -51,4 +66,5 @@ func main() {
     fmt.Println()
     lineCount += 1
   }
+  c.displayValue()
 }
