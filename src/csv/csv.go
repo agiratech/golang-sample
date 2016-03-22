@@ -5,7 +5,7 @@ import (
   "fmt"
   "io"
   "os"
-  "strings"
+  // "strings"
   "./psqlConn"
   // "strconv"
 )
@@ -19,7 +19,7 @@ type CsvHeader struct {
 }
 
 func (c *CsvHeader) assignValue(a []string)  {
-  c.header = strings.Split(a[0],",")
+  c.header = a//strings.Split(a[0],",")
 }
 
 func (c *CsvHeader) returnValue() []string {
@@ -40,7 +40,7 @@ func (c *CsvHeader) returnValue() []string {
 // }
 
 func main() {
-  file, err := os.Open("sample.csv")
+  file, err := os.Open("sample_test.csv")
   c := &CsvHeader{}
   var x int =0
   if err != nil {
@@ -52,7 +52,7 @@ func main() {
   defer file.Close()
   //
   reader := csv.NewReader(file)
-  reader.Comma = '\001'
+  reader.Comma = ','
   lineCount := 0
   for {
     // read just one record, but we could ReadAll() as well
@@ -61,7 +61,7 @@ func main() {
     if err == io.EOF {
       break
     } else if err != nil {
-      fmt.Println("Error:", err)
+      fmt.Println("Parse Error:", err)
       return
     }
 
@@ -74,10 +74,10 @@ func main() {
     }
     stringVal := ""
     var str string
-    for i,rec := range strings.Split(record[0],",") {
-      rec = strings.Replace(rec, "\"", "'", -1)
-      if str  = ","; i == 0 { str = "" }
+    for i,rec := range record {
       if rec = rec; rec == "" { rec = "NULL"}
+      rec = "'"+rec+"'"
+      if str  = ","; i == 0 { str = "" }
       stringVal += (str+rec)
     }
     psqlConn.InsertRec(stringVal) // fmt.Println(" ", record)
