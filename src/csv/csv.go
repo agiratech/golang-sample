@@ -5,27 +5,44 @@ import (
   "fmt"
   "io"
   "os"
+  "strings"
+  "./psqlConn"
+  // "strconv"
 )
+
+func init() {
+  psqlConn.InitDB()
+}
 
 type CsvHeader struct {
   header []string
 }
 
-func (c *CsvHeader) assignValue(a []string) {
-  c.header = a
+func (c *CsvHeader) assignValue(a []string)  {
+  c.header = strings.Split(a[0],",")
 }
 
-func (c *CsvHeader) displayValue() {
-  fmt.Println(c.header)
+func (c *CsvHeader) returnValue() []string {
+  return c.header
 }
 
+// func CheckType(x interface{}) bool {
+//   switch x.(type) {
+//     case string:
+//           return  false
+//     default:
+//           return  true
+//   }
+// }
+
+// func ParseString(x int) string {
+//   return strconv.Itoa(x)
+// }
 
 func main() {
   file, err := os.Open("sample.csv")
   c := &CsvHeader{}
-
   var x int =0
-
   if err != nil {
     // err is printable
     fmt.Println("Error:", err)
@@ -35,8 +52,7 @@ func main() {
   defer file.Close()
   //
   reader := csv.NewReader(file)
-  // options are available at: http://golang.org/src/pkg/encoding/csv/reader.go?s=3213:3671#L94
-  reader.Comma = ';'
+  reader.Comma = '\001'
   lineCount := 0
   for {
     // read just one record, but we could ReadAll() as well
@@ -51,20 +67,21 @@ func main() {
 
     //skip header line in csv
     if x == 0 {
-      fmt.Println("Error")
       x++
       c.assignValue(record)
+      psqlConn.CreateTable(c.returnValue())
       continue
     }
-
-    // record is an array of string so is directly printable
-    // fmt.Println("Record", lineCount, "is", record, "and has", len(record), "fields")
-    // and we can iterate on top of that
-    for i := 0; i < len(record); i++ {
-      fmt.Println(" ", record)
+    stringVal := ""
+    var str string
+    for i,rec := range strings.Split(record[0],",") {
+      rec = strings.Replace(rec, "\"", "'", -1)
+      if str  = ","; i == 0 { str = "" }
+      if rec = rec; rec == "" { rec = "NULL"}
+      stringVal += (str+rec)
     }
-    fmt.Println()
+    psqlConn.InsertRec(stringVal) // fmt.Println(" ", record)
+
     lineCount += 1
   }
-  c.displayValue()
 }
